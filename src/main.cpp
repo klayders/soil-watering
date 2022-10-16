@@ -18,8 +18,8 @@ const char *hostname = "espui";
 #define RELAY_SOIL5 14
 #define RELAY_SOIL6 12
 
-#define SOIL_PIN2 4
-#define SOIL_PIN3 0
+#define SOIL_PIN2 32
+#define SOIL_PIN3 35
 #define SOIL_PIN4 34
 
 const int dry = 0;
@@ -43,7 +43,7 @@ void updateWatering(int soilPin, int relayPin, int webSoil)
 
     ESPUI.updateText(webSoil, ("value=" + String(soilValue) + " percent" + String(dryPercent) + "%"));
 
-    if (dryPercent > 60){
+    if (dryPercent != 0 && dryPercent > 60){
         digitalWrite(relayPin, HIGH);
     } else {
         digitalWrite(relayPin, LOW);
