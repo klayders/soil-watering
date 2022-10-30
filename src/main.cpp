@@ -22,31 +22,63 @@ const char *hostname = "espui";
 #define SOIL_PIN3 35
 #define SOIL_PIN4 34
 
-const int dry = 0;
-const int wet = 4095;
+const int dry = 1000;
+const int wet = 1600;
 
 int webSoil2;
 int webSoil3;
 int webSoil4;
 
+
+int calculatePercent(int soilValue){
+  // 600
+  const int diff = wet - dry;
+
+  if (diff < 0)
+  {
+    return 0;
+  }
+
+  // 1600 - for example 110 = 500;
+  const float value = (float) (wet - soilValue)  / (float) diff;
+
+
+  
+
+  const int result = (int) ((value) * 100);
+
+  return result;
+
+
+}
+
+
 void updateWatering(int soilPin, int relayPin, int webSoil)
 {
 
     int soilValue = analogRead(soilPin);
-    int dryPercent = map(soilValue, wet, dry, 100, 0);
+    // int dryPercent = map(soilValue, wet, dry, 0, 100);
+    int dryPercent = calculatePercent(soilValue);
     Serial.print("Type=" + String(webSoil));
     Serial.print(" soil=");
     Serial.print(soilValue);
     Serial.print(" soil percent=");
     Serial.print(dryPercent);
     Serial.println();
+    if (dryPercent > 0 && dryPercent <100)
+    {
+    ESPUI.updateText(webSoil, ("value=" + String(soilValue) + ", percent=" + String(dryPercent) + "%"));  
+    }else{
+      ESPUI.updateText(webSoil, ("value=" + String(soilValue) + ", percent=0"));  
+    }
+    
 
-    ESPUI.updateText(webSoil, ("value=" + String(soilValue) + " percent" + String(dryPercent) + "%"));
+    
 
-    if (dryPercent != 0 && dryPercent > 60){
-        digitalWrite(relayPin, HIGH);
-    } else {
+    if (dryPercent > 0 && dryPercent < 40){
         digitalWrite(relayPin, LOW);
+    } else {
+        digitalWrite(relayPin, HIGH);
     }
 }
 
@@ -117,9 +149,9 @@ void setup(void)
     Serial.print("IP address: ");
     Serial.println(WiFi.getMode() == WIFI_AP ? WiFi.softAPIP() : WiFi.localIP());
 
-    webSoil2 = ESPUI.label("Soil2:", ControlColor::Turquoise, "0");
-    webSoil3 = ESPUI.label("Soil3:", ControlColor::Emerald, "0");
-    webSoil4 = ESPUI.label("Soil4:", ControlColor::Emerald, "0");
+    webSoil2 = ESPUI.label("Soil2 Влажность:", ControlColor::Turquoise, "0");
+    webSoil3 = ESPUI.label("Soil3 Влажность", ControlColor::Emerald, "0");
+    webSoil4 = ESPUI.label("Soil4 Влажность", ControlColor::Emerald, "0");
 
     ESPUI.begin("ESPUI Control");
 }
